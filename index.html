@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Jurnal KAIH - SMPN 7 Dedai</title>
+    
+    <!-- 1. Pustaka React & Babel -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- 2. Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- 3. Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <style>
+        /* Mengunci background utama browser */
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #cbd5e1; /* Warna latar belakang desktop (abu-abu) */
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        /* Container utama yang mensimulasikan layar HP */
+        #root {
+            width: 100%;
+            max-width: 480px; /* Lebar maksimal menyerupai HP */
+            background-color: #f8fafc;
+            min-height: 100vh;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); /* Bayangan agar timbul */
+            position: relative;
+            overflow-x: hidden; /* Mencegah geser samping */
+        }
+
+        .animate-fade-in-up { animation: fadeInUp 0.5s ease-out; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Custom Scrollbar for list */
+        .student-list::-webkit-scrollbar { width: 6px; }
+        .student-list::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+    // --- LOGIKA KONFIGURASI FIREBASE ---
+        let firebaseConfig = null;
+        let isConfigValid = false;
+
+        if (typeof __firebase_config !== 'undefined') {
+            try {
+                firebaseConfig = JSON.parse(__firebase_config);
+                isConfigValid = true;
+            } catch (e) {
+                console.error("Gagal parsing auto-config", e);
+            }
+        }
+
+        if (!isConfigValid) {
+            // Config Proyek Anda
+            firebaseConfig = {
+                apiKey: "AIzaSyBPyQ7VvSnumxYWm3-TL8t_3qru15eX7fA",
+                authDomain: "jurnal-smpn7-dedai.firebaseapp.com",
+                projectId: "jurnal-smpn7-dedai",
+                storageBucket: "jurnal-smpn7-dedai.firebasestorage.app",
+                messagingSenderId: "342279014464",
+                appId: "1:342279014464:web:51209b7c49675b2715b7a5",
+                measurementId: "G-GX3V4JJ53W"
+            };
+            
+            if (firebaseConfig.apiKey && !firebaseConfig.apiKey.includes("GANTI_DENGAN")) {
+                isConfigValid = true;
+            }
+        }
+
+        let auth, db;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'smpn7-dedai';
+        
+        // --- KONFIGURASI GOOGLE SHEET ---
+        const GOOGLE_SHEET_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxAjodMQq5_5iTE2poH-kSWN5Lu6LgR7_me80k6ln2DojJtkcXOPlN_HiJuLmrB3B3-/exec"; 
+
+        if (isConfigValid) {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            auth = firebase.auth();
+            db = firebase.firestore();
+        }
+
+    // --- DATA GURU & SISWA ---
+        const TEACHERS = [
+            { id: 't_7', name: 'Emi', classId: '7', username: 'walikelas7', password: '123456' },
+            { id: 't_8a', name: 'Yohanes Agus', classId: '8A', username: 'walikelas8a', password: '123456' },
+            { id: 't_8b', name: 'Rusmini', classId: '8B', username: 'walikelas8b', password: '123456' },
+            { id: 't_9a', name: 'Emanila', classId: '9A', username: 'walikelas9a', password: '123456' },
+            { id: 't_9b', name: 'Arten', classId: '9B', username: 'walikelas9b', password: '123456' },
+        ];
+
+        const ALL_STUDENTS = [
+             // Kelas 7 (27 Siswa)
+            { id: 's_7_1', name: 'ADHITYA HERLAMBANG', classId: '7' },
+            { id: 's_7_2', name: 'AFMEL KRITYANI', classId: '7' },
+            { id: 's_7_3', name: 'ARDYANSYAH', classId: '7' },
+            { id: 's_7_4', name: 'ARVAN SYAH', classId: '7' },
+            { id: 's_7_5', name: 'AZHAR REZA PRATAMA', classId: '7' },
+            { id: 's_7_6', name: 'CHRISTIAN KAREL SANE', classId: '7' },
+            { id: 's_7_7', name: 'CRISMAS MAESSY', classId: '7' },
+            { id: 's_7_8', name: 'DARWIN ANDIKA', classId: '7' },
+            { id: 's_7_9', name: 'DWI RAHMAT', classId: '7' },
+            { id: 's_7_10', name: 'EFAN CRISTIAN', classId: '7' },
+            { id: 's_7_11', name: 'FAIS HERIYANTO', classId: '7' },
+            { id: 's_7_12', name: 'FRANSISKUS DION', classId: '7' },
+            { id: 's_7_13', name: 'FAYZA SYABILA', classId: '7' },
+            { id: 's_7_14', name: 'GRASIMUS KIMBERLY', classId: '7' },
+            { id: 's_7_15', name: 'KINARA JULIANTI', classId: '7' },
+            { id: 's_7_16', name: 'MARGARETA SELA', classId: '7' },
+            { id: 's_7_17', name: 'MEDESTO RIZKI ALFIAN', classId: '7' },
+            { id: 's_7_18', name: 'MORIN AULIA SESA', classId: '7' },
+            { id: 's_7_19', name: 'MUSTOFA ANGGA SAPUTRA', classId: '7' },
+            { id: 's_7_20', name: 'SAFANA AQILLA PRATAMA', classId: '7' },
+            { id: 's_7_21', name: 'SESILIA ROSWATI', classId: '7' },
+            { id: 's_7_22', name: 'THALITA WULANDARI', classId: '7' },
+            { id: 's_7_23', name: 'VALENTINO FEBRIANTO', classId: '7' },
+            { id: 's_7_24', name: 'VEFRIYANTY AUREL', classId: '7' },
+            { id: 's_7_25', name: 'VINES ALDINDA ZILXI', classId: '7' },
+            { id: 's_7_26', name: 'YOVITA SOLEHA', classId: '7' },
+            { id: 's_7_27', name: 'ZIYAN WIRAMADA', classId: '7' },
+
+            // Kelas 8A (26 Siswa)
+            { id: 's_8a_1', name: 'ANGGELA NANDA FIKARIS', classId: '8A' },
+            { id: 's_8a_2', name: 'AURORANISA NAFSI FADILAH', classId: '8A' },
+            { id: 's_8a_3', name: 'AYU KHARINA', classId: '8A' },
+            { id: 's_8a_4', name: 'CARISSA YONA GRACIA', classId: '8A' },
+            { id: 's_8a_5', name: 'CELSI SUNARDIYANTI', classId: '8A' },
+            { id: 's_8a_6', name: 'CINTA LESTARI', classId: '8A' },
+            { id: 's_8a_7', name: 'DELLIYANA PUTRI', classId: '8A' },
+            { id: 's_8a_8', name: 'FAIR GIOTAMA', classId: '8A' },
+            { id: 's_8a_9', name: 'FLAVIANA EVARISTA', classId: '8A' },
+            { id: 's_8a_10', name: 'IBNU AFIZA', classId: '8A' },
+            { id: 's_8a_11', name: 'KADEK ZANETA GRISELDIS', classId: '8A' },
+            { id: 's_8a_12', name: 'KRESENSIA', classId: '8A' },
+            { id: 's_8a_13', name: 'MARSYA ADELLIA NINGSIH', classId: '8A' },
+            { id: 's_8a_14', name: 'NADINE SILVIA FERONIKA', classId: '8A' },
+            { id: 's_8a_15', name: 'OKHA PRASETYA', classId: '8A' },
+            { id: 's_8a_16', name: 'PATRISIA LIDIA', classId: '8A' },
+            { id: 's_8a_17', name: 'PETRI MELINA INDRIANINGSIH', classId: '8A' },
+            { id: 's_8a_18', name: 'REPAL SAPUTRA', classId: '8A' },
+            { id: 's_8a_19', name: 'RHAVEL ADHITYA PRANATA', classId: '8A' },
+            { id: 's_8a_20', name: 'RORO CHANDANI', classId: '8A' },
+            { id: 's_8a_21', name: 'SITI HIDAYATI', classId: '8A' },
+            { id: 's_8a_22', name: 'STEPANA NADA', classId: '8A' },
+            { id: 's_8a_23', name: 'THEODESIA KAPRILIANI A', classId: '8A' },
+            { id: 's_8a_24', name: 'THOMAS YOSUA', classId: '8A' },
+            { id: 's_8a_25', name: 'VIVI SASKIA ANJANI', classId: '8A' },
+            { id: 's_8a_26', name: 'WAHYUDI', classId: '8A' },
+
+            // Kelas 8B (27 Siswa)
+            { id: 's_8b_1', name: 'ALYA NUR WAHDA', classId: '8B' },
+            { id: 's_8b_2', name: 'ANDI AJENG KARTINI', classId: '8B' },
+            { id: 's_8b_3', name: 'CHITRA PUTRI FHIANDA', classId: '8B' },
+            { id: 's_8b_4', name: 'DEDEN SARIFUDIN', classId: '8B' },
+            { id: 's_8b_5', name: 'DIKA PRATAMA PUTRA', classId: '8B' },
+            { id: 's_8b_6', name: 'FELISIANUS ALDEGO', classId: '8B' },
+            { id: 's_8b_7', name: 'GABRIELLO ARUANDA', classId: '8B' },
+            { id: 's_8b_8', name: 'HELENA SEPIA', classId: '8B' },
+            { id: 's_8b_9', name: 'HILARION MARWAN', classId: '8B' },
+            { id: 's_8b_10', name: 'KAREL KAFASO', classId: '8B' },
+            { id: 's_8b_11', name: 'LILY PUTRI KONG', classId: '8B' },
+            { id: 's_8b_12', name: 'LUT FIANA ULFA', classId: '8B' },
+            { id: 's_8b_13', name: 'MARCOLIS BASTIAN IIL', classId: '8B' },
+            { id: 's_8b_14', name: 'MARGARET ELSA YUNIATI', classId: '8B' },
+            { id: 's_8b_15', name: 'MARIA MAKDALENA', classId: '8B' },
+            { id: 's_8b_16', name: 'MARIA NYI ANGRAENI', classId: '8B' },
+            { id: 's_8b_17', name: 'MELLY YULIANTI', classId: '8B' },
+            { id: 's_8b_18', name: 'MESERA YUSNIKA PUTRI', classId: '8B' },
+            { id: 's_8b_19', name: 'MILSA HARVISA', classId: '8B' },
+            { id: 's_8b_20', name: 'NADA PRISKILLA', classId: '8B' },
+            { id: 's_8b_21', name: 'NAJWA HANUM', classId: '8B' },
+            { id: 's_8b_22', name: 'NATTASA LUDIANA SAKIRA', classId: '8B' },
+            { id: 's_8b_23', name: 'NI NYOMAN KEYRA LATHISYA', classId: '8B' },
+            { id: 's_8b_24', name: 'PRANSISKA MESYA PUTRI', classId: '8B' },
+            { id: 's_8b_25', name: 'SERA SISKA NARJANA SARI', classId: '8B' },
+            { id: 's_8b_26', name: 'SUBHAN', classId: '8B' },
+            { id: 's_8b_27', name: 'YOHANA PUTRI AURORA', classId: '8B' },
+
+            // Kelas 9A (25 Siswa)
+            { id: 's_9a_1', name: 'ADITYA PUTRA', classId: '9A' },
+            { id: 's_9a_2', name: 'AJI ALVIN', classId: '9A' },
+            { id: 's_9a_3', name: 'ALZIYADATHU THIFAL ATQIYA', classId: '9A' },
+            { id: 's_9a_4', name: 'ANDREAS PUTRA', classId: '9A' },
+            { id: 's_9a_5', name: 'CHERRYL VIONA DHINI', classId: '9A' },
+            { id: 's_9a_6', name: 'DAMAR SATRIYO', classId: '9A' },
+            { id: 's_9a_7', name: 'DEARLYN JANNIO DE KENZO', classId: '9A' },
+            { id: 's_9a_8', name: 'DEWI SEVI', classId: '9A' },
+            { id: 's_9a_9', name: 'DZAKIYAH SALZABIL', classId: '9A' },
+            { id: 's_9a_10', name: 'ELSA RIYANTI', classId: '9A' },
+            { id: 's_9a_11', name: 'ERISKA CERELEKA WANDANI', classId: '9A' },
+            { id: 's_9a_12', name: 'LAURA MAHARANI', classId: '9A' },
+            { id: 's_9a_13', name: 'LUCKEN DINDI ALFANO', classId: '9A' },
+            { id: 's_9a_14', name: 'MARLO GONZAGA', classId: '9A' },
+            { id: 's_9a_15', name: 'MARTIANO LUTHER', classId: '9A' },
+            { id: 's_9a_16', name: 'MAULANA NUR AZZAM', classId: '9A' },
+            { id: 's_9a_17', name: 'MUHAMMAD ZAQKI WILLDAN', classId: '9A' },
+            { id: 's_9a_18', name: 'NIKITA OCTAVIANI', classId: '9A' },
+            { id: 's_9a_19', name: 'NOURA EGA FLORIANI', classId: '9A' },
+            { id: 's_9a_20', name: 'SAMELYA LADY AMELIA', classId: '9A' },
+            { id: 's_9a_21', name: 'SHAFFA AULIA DWI YANTI', classId: '9A' },
+            { id: 's_9a_22', name: 'SIFA ANGGRAINI', classId: '9A' },
+            { id: 's_9a_23', name: 'SOFKHAL ROYHAN', classId: '9A' },
+            { id: 's_9a_24', name: 'TEODORUS EDIT', classId: '9A' },
+            { id: 's_9a_25', name: 'WIDYA OKTAVIANA', classId: '9A' },
+
+            // Kelas 9B (26 Siswa)
+            { id: 's_9b_1', name: 'ANA ARIFATUNNISA', classId: '9B' },
+            { id: 's_9b_2', name: 'CHRISTIAN JIEVEN AFIEL', classId: '9B' },
+            { id: 's_9b_3', name: 'DEWI MARSELA MAHARANI', classId: '9B' },
+            { id: 's_9b_4', name: 'EGI DANU ARIYANTO', classId: '9B' },
+            { id: 's_9b_5', name: 'FAHRI QOLBI', classId: '9B' },
+            { id: 's_9b_6', name: 'FITRI RAHMADANI', classId: '9B' },
+            { id: 's_9b_7', name: 'GLORIA JESSIKA', classId: '9B' },
+            { id: 's_9b_8', name: 'INDRI HAFNASARI', classId: '9B' },
+            { id: 's_9b_9', name: 'JESIKA FELISYA ZALIANTI', classId: '9B' },
+            { id: 's_9b_10', name: 'JON DIMAS SPUTRA', classId: '9B' },
+            { id: 's_9b_11', name: 'JULY RIYANTO', classId: '9B' },
+            { id: 's_9b_12', name: 'KADIKI RIYANTO', classId: '9B' },
+            { id: 's_9b_13', name: 'KESY FETRIX EPENDO', classId: '9B' },
+            { id: 's_9b_14', name: 'KRESSENTIA BELLA', classId: '9B' },
+            { id: 's_9b_15', name: 'KYLA DWI EVELYN', classId: '9B' },
+            { id: 's_9b_16', name: 'LEONISSA NADA VIANNEY', classId: '9B' },
+            { id: 's_9b_17', name: 'MUHAMMAD IFWIN', classId: '9B' },
+            { id: 's_9b_18', name: 'MARGERIUS DERRO', classId: '9B' },
+            { id: 's_9b_19', name: 'NATALIS DESEM', classId: '9B' },
+            { id: 's_9b_20', name: 'NOVA', classId: '9B' },
+            { id: 's_9b_21', name: 'NURUL OKTAVIYANI', classId: '9B' },
+            { id: 's_9b_22', name: 'RESESA YURIN SYAHPUTRI', classId: '9B' },
+            { id: 's_9b_23', name: 'RIRIN TRIATMI', classId: '9B' },
+            { id: 's_9b_24', name: 'VIKI KURNIAWAN', classId: '9B' },
+            { id: 's_9b_25', name: 'VIRNA JOICE VIVIANI', classId: '9B' },
+            { id: 's_9b_26', name: 'YOHANES KUNTO', classId: '9B' },
+        ];
+
+        // --- ICONS (SVG STRINGS) ---
+        const Icons = {
+            Sun: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>,
+            Moon: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>,
+            Heart: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>,
+            Activity: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>,
+            Utensils: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>,
+            BookOpen: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>,
+            Users: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+            CheckCircle: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg>,
+            Calendar: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>,
+            Trophy: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>,
+            Star: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+            User: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+            LogOut: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>,
+            Award: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>,
+            MessageSquare: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
+            Video: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2" ry="2"/></svg>,
+            Music: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>,
+            ChevronDown: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>,
+            ChevronUp: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg>,
+            Close: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>,
+            Refresh: () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
+        };
+
+        // --- STICKER & VALIDATION CONSTANTS ---
+        const VALIDATION_OPTIONS = [
+            { label: "Sangat Baik", value: "sangat_baik", color: "bg-green-100 text-green-700 border-green-300", icon: "🌟", desc: "Luar Biasa!" },
+            { label: "Baik", value: "baik", color: "bg-blue-100 text-blue-700 border-blue-300", icon: "👍", desc: "Pertahankan!" },
+            { label: "Cukup", value: "cukup", color: "bg-yellow-100 text-yellow-700 border-yellow-300", icon: "🙂", desc: "Tingkatkan lagi." },
+            { label: "Kurang", value: "kurang", color: "bg-red-100 text-red-700 border-red-300", icon: "💪", desc: "Ayo semangat!" }
+        ];
+
+        const HABITS = [
+          { 
+            id: 'h1', title: 'Bangun Pagi', icon: Icons.Sun, color: 'text-yellow-500', desc: 'Target: 04.00 - 06.00', type: 'time',
+            items: ['Bangun tidur antara pukul 04.00 - 06.00.']
+          },
+          { 
+            id: 'h2', title: 'Beribadah', icon: Icons.Heart, color: 'text-purple-500', desc: 'Ibadah & Doa Harian', type: 'check',
+            items: ['Melaksanakan ibadah rutin harian sesuai ajaran agama.', 'Berdoa bersama sebelum dan sesudah pembelajaran.', 'Mengikuti kegiatan keagamaan atau ekstrakurikuler.']
+          },
+          { 
+            id: 'h3', title: 'Berolahraga', icon: Icons.Activity, color: 'text-red-500', desc: 'Senam & Fisik Sehat', type: 'check',
+            items: ['Mengikuti senam pagi minimal dua kali seminggu.', 'Melakukan aktivitas fisik seperti jalan sehat.', 'Melakukan peregangan singkat.']
+          },
+          { 
+            id: 'h4', title: 'Makan Sehat', icon: Icons.Utensils, color: 'text-green-500', desc: 'Gizi Seimbang & Air Putih', type: 'check',
+            items: ['Menerapkan prinsip "Isi Piringku".', 'Membawa bekal sehat dari rumah.', 'Minum air putih minimal 8 gelas sehari.', 'Jajanan sehat rendah gula/garam.']
+          },
+          { 
+            id: 'h5', title: 'Gemar Belajar', icon: Icons.BookOpen, color: 'text-blue-500', desc: 'Literasi & Belajar Mandiri', type: 'check',
+            items: ['Membaca buku setiap hari.', 'Mematuhi jadwal belajar mandiri.', 'Aktif bertanya dan berdiskusi.', 'Menetapkan target belajar pribadi.']
+          },
+          { 
+            id: 'h6', title: 'Bermasyarakat', icon: Icons.Users, color: 'text-orange-500', desc: 'Sosial & Gotong Royong', type: 'check',
+            items: ['Gotong royong membersihkan lingkungan.', 'Melakukan aksi sosial.', 'Tata krama dan budaya antre.', 'Bermain permainan tradisional.']
+          },
+          { 
+            id: 'h7', title: 'Tidur Cepat', icon: Icons.Moon, color: 'text-indigo-600', desc: 'Target: 21:00 (Jam 9 Malam)', type: 'time',
+            items: ['Tidur tepat waktu (8-9 jam).', 'Menghindari gadget 1 jam sebelum tidur.', 'Membaca buku fisik sebelum tidur.']
+          },
+        ];
+
+        // --- COMPONENTS ---
+
+        const Card = ({ children, className = '' }) => (
+            <div className={`bg-white rounded-xl shadow-sm border border-slate-100 ${className}`}>
+                {children}
+            </div>
+        );
+
+        // --- KOMPONEN BARU: PEMILIH WAKTU 24 JAM (TAMPILAN DIPERBAIKI) ---
+        const TimePicker24H = ({ value, onChange, disabled }) => {
+            // value format "HH:mm"
+            const [hours, minutes] = (value || "00:00").split(":");
+
+            const handleHourChange = (e) => {
+                const newH = e.target.value;
+                onChange(`${newH}:${minutes}`);
+            };
+
+            const handleMinuteChange = (e) => {
+                const newM = e.target.value;
+                onChange(`${hours}:${newM}`);
+            };
+
+            const hourOptions = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'));
+            const minuteOptions = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0'));
+
+            return (
+                <div className="flex items-center gap-1 bg-white border-2 border-blue-100 rounded-lg p-1 shadow-sm">
+                    <select 
+                        value={hours} 
+                        onChange={handleHourChange}
+                        disabled={disabled}
+                        className="bg-transparent text-sm font-bold text-blue-600 outline-none p-1 cursor-pointer appearance-none text-center min-w-[40px]"
+                    >
+                        {hourOptions.map(h => <option key={h} value={h}>{h}</option>)}
+                    </select>
+                    <span className="text-blue-300 font-bold">:</span>
+                    <select 
+                        value={minutes} 
+                        onChange={handleMinuteChange}
+                        disabled={disabled}
+                        className="bg-transparent text-sm font-bold text-blue-600 outline-none p-1 cursor-pointer appearance-none text-center min-w-[40px]"
+                    >
+                        {minuteOptions.map(m => <option key={m} value={m}>{m}</option>)}
+                    </select>
+                </div>
+            );
+        };
+
+        // Setup Instruction Screen
+        function SetupInstruction() {
+            return (
+                <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+                    <Card className="w-full p-8 text-center animate-fade-in-up">
+                        <div className="w-20 h-20 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <Icons.Sun />
+                        </div>
+                        <h1 className="text-2xl font-bold text-slate-800 mb-2">Aplikasi Belum Terhubung</h1>
+                        <p className="text-slate-600 mb-6">
+                            Untuk menggunakan aplikasi ini, Anda harus menghubungkannya ke database Firebase milik sekolah.
+                        </p>
+                        
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-left text-sm text-yellow-800 mb-6">
+                            <p className="font-bold mb-2">Langkah Perbaikan:</p>
+                            <ol className="list-decimal pl-5 space-y-1">
+                                <li>Buka file <code>index.html</code> (kode aplikasi ini).</li>
+                                <li>Cari bagian <code>firebaseConfig</code> di awal skrip.</li>
+                                <li>Ganti teks <code>GANTI_DENGAN_API_KEY_ANDA</code> dan lainnya dengan konfigurasi dari Firebase Console Anda.</li>
+                            </ol>
+                        </div>
+                        
+                        <a 
+                            href="https://console.firebase.google.com" 
+                            target="_blank"
+                            className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 transition-colors"
+                        >
+                            Buka Firebase Console
+                        </a>
+                    </Card>
+                </div>
+            );
+        }
+
+        function HabitList({ initialData, onSave, isReadOnly }) {
+            const [data, setData] = React.useState({});
+            const [expandedHabit, setExpandedHabit] = React.useState(null);
+            // Tambahkan state untuk konfirmasi
+            const [showConfirm, setShowConfirm] = React.useState(false);
+
+            React.useEffect(() => {
+                const defaults = {};
+                HABITS.forEach(h => {
+                    defaults[h.id] = initialData[h.id] || { status: false, timeValue: '' };
+                });
+                setData(defaults);
+            }, [initialData]);
+
+            const toggleExpand = (id) => {
+                setExpandedHabit(expandedHabit === id ? null : id);
+            };
+
+            const handleChange = (id, field, value) => {
+                if (isReadOnly) return;
+                
+                const newData = {
+                    ...data,
+                    [id]: { ...data[id], [field]: value }
+                };
+
+                // Logic Bangun Pagi
+                if (id === 'h1' && field === 'timeValue') { 
+                    const [hours, mins] = value.split(':').map(Number);
+                    const timeVal = hours + (mins/60);
+                    newData[id].status = timeVal >= 4 && timeVal <= 6;
+                }
+                
+                // Logic Tidur
+                if (id === 'h7' && field === 'timeValue') { 
+                    newData[id].status = value !== ''; 
+                }
+
+                setData(newData);
+            };
+
+            // Ganti handleSave dengan triggerConfirm
+            const triggerConfirm = () => {
+                setShowConfirm(true);
+            }
+
+            const confirmSave = () => {
+                setShowConfirm(false);
+                onSave(data);
+                // alert akan dipanggil di parent component (StudentDashboard) setelah proses async
+            };
+
+            return (
+                <div className="space-y-4">
+                    {HABITS.map(habit => {
+                        const itemData = data[habit.id] || { status: false, timeValue: '' };
+                        const Icon = habit.icon;
+                        const isExpanded = expandedHabit === habit.id;
+                        
+                        return (
+                            <Card key={habit.id} className="p-4 transition-all hover:shadow-md">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                                    <div className={`p-3 rounded-xl bg-slate-50 ${habit.color}`}>
+                                        <Icon />
+                                    </div>
+                                    <div className="flex-1 cursor-pointer" onClick={() => toggleExpand(habit.id)}>
+                                        <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                                            {habit.title}
+                                            {isExpanded ? <Icons.ChevronUp /> : <Icons.ChevronDown />}
+                                        </h3>
+                                        <p className="text-xs text-slate-500">{habit.desc}</p>
+                                    </div>
+                                    
+                                    <div className="flex items-center gap-4">
+                                        {habit.type === 'time' && (
+                                            <div className="flex flex-col items-end gap-1">
+                                                <TimePicker24H 
+                                                    value={itemData.timeValue}
+                                                    onChange={(val) => handleChange(habit.id, 'timeValue', val)}
+                                                    disabled={isReadOnly}
+                                                />
+                                            </div>
+                                        )}
+                                        
+                                        <button
+                                            disabled={isReadOnly || habit.type === 'time'}
+                                            onClick={() => handleChange(habit.id, 'status', !itemData.status)}
+                                            className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
+                                                itemData.status 
+                                                ? 'bg-green-500 text-white shadow-green-200 shadow-lg scale-105' 
+                                                : 'bg-slate-100 text-slate-300 hover:bg-slate-200'
+                                            }`}
+                                        >
+                                            {itemData.status ? <Icons.CheckCircle /> : <div className="w-4 h-4 rounded-full border-2 border-slate-300" />}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {isExpanded && (
+                                    <div className="mt-4 pt-3 border-t border-slate-100 bg-slate-50/50 -mx-4 -mb-4 p-4 rounded-b-xl animate-fade-in-down">
+                                        <p className="text-xs font-bold text-slate-500 uppercase mb-2">Kegiatan:</p>
+                                        <ul className="space-y-1">
+                                            {habit.items.map((item, idx) => (
+                                                <li key={idx} className="text-sm text-slate-600 flex items-start gap-2">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 shrink-0" />
+                                                    <span>{item}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </Card>
+                        );
+                    })}
+                    
+                    {!isReadOnly && (
+                        <div className="sticky bottom-4">
+                            <button 
+                                onClick={triggerConfirm}
+                                className="w-full bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-200 active:scale-95 transition-all flex justify-center items-center gap-2"
+                            >
+                               <Icons.CheckCircle size={20}/> Simpan Jurnal Hari Ini
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Konfirmasi Modal */}
+                    {showConfirm && (
+                        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4 animate-fade-in-up">
+                            <div className="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl text-center">
+                                <div className="w-16 h-16 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <span className="text-3xl">⚠️</span>
+                                </div>
+                                <h3 className="font-bold text-lg text-slate-800 mb-2">Konfirmasi Simpan</h3>
+                                <p className="text-sm text-slate-500 mb-6">
+                                    Apakah semua data sudah benar? <br/>
+                                    Jurnal <b>hanya bisa diisi 1 kali sehari</b>. Anda tidak dapat mengubahnya setelah disimpan.
+                                </p>
+                                <div className="flex gap-3">
+                                    <button 
+                                        onClick={() => setShowConfirm(false)}
+                                        className="flex-1 py-2 text-slate-600 font-medium hover:bg-slate-100 rounded-lg transition-colors"
+                                    >
+                                        Cek Lagi
+                                    </button>
+                                    <button 
+                                        onClick={confirmSave}
+                                        className="flex-1 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors shadow-md"
+                                    >
+                                        Ya, Simpan
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        function LoginScreen({ onLogin }) {
+            const [role, setRole] = React.useState('student');
+            const [selectedClass, setSelectedClass] = React.useState('7');
+            // State for Teacher Login
+            const [username, setUsername] = React.useState('');
+            const [password, setPassword] = React.useState('');
+            const [loginError, setLoginError] = React.useState(''); // New state for error message
+            
+            const filteredStudents = React.useMemo(() => {
+                return ALL_STUDENTS.filter(s => s.classId === selectedClass);
+            }, [selectedClass]);
+
+            const handleLogin = (id, name, role, classId) => {
+                let childId = null;
+                if (role === 'parent') {
+                    childId = id.replace('parent_', ''); 
+                }
+                onLogin({ id, name, role, classId, childId });
+            };
+
+            const handleTeacherLogin = () => {
+                const teacher = TEACHERS.find(t => t.username === username && t.password === password);
+                if (teacher) {
+                    setLoginError(''); // Clear error
+                    onLogin({ id: teacher.id, name: teacher.name, role: 'teacher', classId: teacher.classId });
+                } else {
+                    setLoginError("Username atau Password salah, silahkan ulangi kembali"); // Set error message
+                }
+            };
+
+            return (
+                <div className="h-full min-h-screen bg-gradient-to-br from-blue-500 to-indigo-600 flex flex-col items-center justify-center p-4">
+                    <Card className="w-full p-6 animate-fade-in-up shadow-xl">
+                        <div className="text-center mb-8">
+                            <img 
+                                src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Logo_of_Ministry_of_Education_and_Culture_of_Republic_of_Indonesia.svg/480px-Logo_of_Ministry_of_Education_and_Culture_of_Republic_of_Indonesia.svg.png" 
+                                alt="Logo" 
+                                className="w-20 h-20 mx-auto mb-4 object-contain"
+                            />
+                            <h1 className="text-2xl font-bold text-slate-800">Selamat Datang</h1>
+                            <p className="text-slate-500 text-center px-4">Aplikasi Jurnal KAIH SMPN 7 Dedai, Sintang, Provinsi Kalimantan Barat</p>
+                        </div>
+
+                        <div className="flex bg-slate-100 p-1 rounded-lg mb-6">
+                            {['student', 'parent', 'teacher'].map(r => (
+                                <button
+                                    key={r}
+                                    onClick={() => setRole(r)}
+                                    className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
+                                        role === r ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                                    }`}
+                                >
+                                    {r === 'student' ? 'Murid' : r === 'parent' ? 'Ortu' : 'Guru'}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="space-y-4">
+                            {role === 'teacher' ? (
+                                <div className="space-y-3">
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Username</label>
+                                        <input 
+                                            type="text" 
+                                            value={username}
+                                            onChange={(e) => setUsername(e.target.value)}
+                                            className="w-full border rounded-lg p-2 text-sm outline-none focus:border-blue-500"
+                                            placeholder="Masukkan username wali kelas"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Password</label>
+                                        <input 
+                                            type="password" 
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            className="w-full border rounded-lg p-2 text-sm outline-none focus:border-blue-500"
+                                            placeholder="Masukkan password"
+                                        />
+                                    </div>
+                                    
+                                    {loginError && (
+                                        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded relative text-sm text-center" role="alert">
+                                            <span className="block sm:inline">{loginError}</span>
+                                        </div>
+                                    )}
+
+                                    <button 
+                                        onClick={handleTeacherLogin}
+                                        className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-200 active:scale-95 transition-all mt-2"
+                                    >
+                                        Masuk sebagai Guru
+                                    </button>
+                                </div>
+                            ) : (
+                                <>
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Pilih Kelas</label>
+                                        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                                            {['7', '8A', '8B', '9A', '9B'].map(c => (
+                                                <button
+                                                    key={c}
+                                                    onClick={() => setSelectedClass(c)}
+                                                    className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap border ${
+                                                        selectedClass === c 
+                                                        ? 'bg-blue-600 text-white border-blue-600' 
+                                                        : 'bg-white text-slate-600 border-slate-200 hover:border-blue-300'
+                                                    }`}
+                                                >
+                                                    {c}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+                                            {role === 'student' ? 'Pilih Namamu' : 'Pilih Nama Anak'}
+                                        </label>
+                                        <div className="max-h-60 overflow-y-auto space-y-2 border rounded-xl p-2 bg-slate-50 student-list">
+                                            {filteredStudents.map(s => (
+                                                <button
+                                                    key={s.id}
+                                                    onClick={() => handleLogin(role === 'student' ? s.id : `parent_${s.id}`, role === 'student' ? s.name : `Ortu ${s.name}`, role, s.classId)}
+                                                    className="w-full flex items-center p-3 bg-white border rounded-lg hover:border-blue-500 hover:shadow-sm transition-all text-left"
+                                                >
+                                                    <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center mr-3 text-xs font-bold text-slate-500">
+                                                        {s.name.substring(0, 1)}
+                                                    </div>
+                                                    <span className="text-sm font-medium text-slate-700">{s.name}</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </Card>
+                </div>
+            );
+        }
+
+        // --- MAIN APP ---
+
+        function App() {
+            // Safety Check: Render SetupInstruction if config is missing
+            if (!isConfigValid) {
+                return <SetupInstruction />;
+            }
+
+            const [user, setUser] = React.useState(null);
+            const [appUser, setAppUser] = React.useState(null);
+            const [loading, setLoading] = React.useState(true);
+
+            React.useEffect(() => {
+                const initAuth = async () => {
+                    // Logic: Gunakan token Canvas jika tersedia, jika tidak (di Google Sites) gunakan Anonymous
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        try {
+                            await auth.signInWithCustomToken(__initial_auth_token);
+                        } catch (e) {
+                            console.warn("Auth token gagal, mencoba anonymous...", e);
+                            await auth.signInAnonymously();
+                        }
+                    } else {
+                        await auth.signInAnonymously();
+                    }
+                };
+                
+                initAuth().catch(e => console.error("Login Error:", e));
+
+                const unsubscribe = auth.onAuthStateChanged((u) => {
+                    setUser(u);
+                    setLoading(false);
+                });
+                return () => unsubscribe();
+            }, []);
+
+            if (loading) return <div className="h-screen flex items-center justify-center">Memuat...</div>;
+            if (!appUser) return <LoginScreen onLogin={setAppUser} />;
+
+            return (
+                <div className="min-h-screen font-sans text-slate-800 pb-20 bg-slate-50">
+                    <header className="bg-white border-b sticky top-0 z-50">
+                        <div className="w-full px-4 h-16 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Logo_of_Ministry_of_Education_and_Culture_of_Republic_of_Indonesia.svg/480px-Logo_of_Ministry_of_Education_and_Culture_of_Republic_of_Indonesia.svg.png" className="w-8 h-8 object-contain" />
+                                <div>
+                                    <h1 className="font-bold text-sm">Jurnal 7 KAIH</h1>
+                                </div>
+                            </div>
+                            <button onClick={() => setAppUser(null)} className="p-2 text-slate-500"><Icons.LogOut/></button>
+                        </div>
+                    </header>
+                    <main className="w-full p-4">
+                        {appUser.role === 'student' && <StudentDashboard user={appUser} firebaseUser={user} />}
+                        {appUser.role === 'teacher' && <TeacherDashboard user={appUser} firebaseUser={user} />}
+                        {/* Dashboard lain bisa ditambahkan di sini dengan logika yang sama */}
+                        {appUser.role === 'parent' && <ParentDashboard user={appUser} firebaseUser={user} />}
+                    </main>
+                </div>
+            );
+        }
+
+        // Parent Dashboard Component
+        function ParentDashboard({ user, firebaseUser }) {
+             const [date, setDate] = React.useState(new Date().toISOString().split('T')[0]);
+             const [childLog, setChildLog] = React.useState(null);
+             
+             React.useEffect(() => {
+                if (!firebaseUser || !user.childId) return;
+                const docRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection(`logs_${user.childId}`).doc(date);
+                
+                docRef.onSnapshot(doc => {
+                    if (doc.exists) {
+                        setChildLog(doc.data());
+                    } else {
+                        setChildLog(null);
+                    }
+                });
+             }, [firebaseUser, user.childId, date]);
+
+             const handleSaveValidation = async (rating) => {
+                 if (!user.childId) return;
+                 const stickerInfo = VALIDATION_OPTIONS.find(v => v.value === rating);
+                 
+                 const dataToUpdate = {
+                     parentValidation: {
+                         rating: rating,
+                         sticker: stickerInfo.icon,
+                         timestamp: new Date().toISOString(),
+                         parentName: user.name
+                     }
+                 };
+
+                 await db.collection('artifacts').doc(appId).collection('public').doc('data').collection(`logs_${user.childId}`).doc(date).set(dataToUpdate, { merge: true });
+                 
+                 // Simpan ke Google Sheet (Update Row)
+                 if (GOOGLE_SHEET_SCRIPT_URL && childLog) {
+                     const sheetPayload = {
+                         role: 'parent',
+                         date: date,
+                         studentName: childLog.studentName,
+                         classId: childLog.classId,
+                         parentValidation: dataToUpdate.parentValidation
+                     };
+                     
+                     fetch(GOOGLE_SHEET_SCRIPT_URL, {
+                         method: 'POST',
+                         mode: 'no-cors',
+                         headers: { 'Content-Type': 'application/json' },
+                         body: JSON.stringify(sheetPayload)
+                     }).catch(e => console.error("Sheet Error:", e));
+                 }
+
+                 alert(`Validasi Orang Tua: ${stickerInfo.label} diberikan!`);
+             };
+
+             return (
+                <div className="space-y-6">
+                  <div className="bg-purple-600 rounded-2xl p-6 text-white shadow-lg">
+                    <h2 className="text-xl font-bold">Portal Orang Tua</h2>
+                    <p className="text-purple-100 text-sm">Memantau: {user.name.replace('Ortu ', '')}</p>
+                  </div>
+
+                  {/* Date Picker */}
+                  <div className="flex items-center justify-between bg-white p-3 rounded-xl shadow-sm border">
+                        <div className="flex items-center gap-2">
+                            <Icons.Calendar className="text-slate-500"/>
+                            <span className="text-sm font-semibold text-slate-600">Tanggal:</span>
+                        </div>
+                        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="outline-none font-medium text-slate-700"/>
+                  </div>
+
+                  {!childLog ? (
+                      <div className="text-center py-12 bg-white rounded-xl border border-dashed border-slate-300">
+                          <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-400">
+                              <Icons.BookOpen />
+                          </div>
+                          <p className="text-slate-500 font-medium">Belum ada jurnal</p>
+                          <p className="text-xs text-slate-400">Anak belum mengisi jurnal pada tanggal ini.</p>
+                      </div>
+                  ) : (
+                      <>
+                          <Card className="p-4 bg-white">
+                              <div className="flex items-center justify-between mb-4 border-b pb-2">
+                                <h3 className="font-bold text-lg text-slate-800">Isian Jurnal</h3>
+                                <span className="font-bold text-blue-600">{childLog.completionPercentage}%</span>
+                              </div>
+                              <HabitList initialData={childLog} isReadOnly={true} />
+                          </Card>
+
+                          <Card className="p-4 border-t-4 border-purple-500 bg-white">
+                              <div className="text-center mb-4">
+                                  <h3 className="font-bold text-slate-800">Validasi & Stiker</h3>
+                                  <p className="text-xs text-slate-500">Berikan apresiasi untuk anak hari ini.</p>
+                              </div>
+                              
+                              {childLog.parentValidation && (
+                                  <div className="mb-4 bg-green-50 p-2 rounded-lg border border-green-200 text-center">
+                                      <p className="text-xs text-green-800">Anda memberikan stiker:</p>
+                                      <span className="text-3xl">{childLog.parentValidation.sticker}</span>
+                                  </div>
+                              )}
+
+                              <div className="grid grid-cols-2 gap-3">
+                                  {VALIDATION_OPTIONS.map((opt) => (
+                                      <button
+                                          key={opt.value}
+                                          onClick={() => handleSaveValidation(opt.value)}
+                                          className={`p-3 rounded-xl border-2 flex flex-col items-center gap-1 transition-all active:scale-95 ${
+                                              childLog.parentValidation?.rating === opt.value
+                                              ? 'border-purple-500 bg-purple-50 shadow-md ring-2 ring-purple-200'
+                                              : 'border-slate-100 bg-white hover:border-purple-200'
+                                          }`}
+                                      >
+                                          <span className="text-2xl">{opt.icon}</span>
+                                          <span className="text-xs font-bold text-slate-700">{opt.label}</span>
+                                      </button>
+                                  ))}
+                              </div>
+                          </Card>
+                      </>
+                  )}
+                </div>
+             );
+        }
+
+        // Student Dashboard Component
+        function StudentDashboard({ user, firebaseUser }) {
+             const [date, setDate] = React.useState(new Date().toISOString().split('T')[0]);
+             const [logData, setLogData] = React.useState({});
+             const [isSaving, setIsSaving] = React.useState(false);
+             const [isAlreadyFilled, setIsAlreadyFilled] = React.useState(false);
+
+             React.useEffect(() => {
+                if (!firebaseUser) return;
+                // Use safe paths for Firestore
+                const docRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection(`logs_${user.id}`);
+                
+                // Tambahkan error handler untuk mendeteksi permission denied
+                docRef.onSnapshot(
+                    snapshot => {
+                      const logs = {};
+                      snapshot.forEach(doc => logs[doc.id] = doc.data());
+                      setLogData(logs);
+                      
+                      // Check if today is filled
+                      if (logs[date]) {
+                          setIsAlreadyFilled(true);
+                      } else {
+                          setIsAlreadyFilled(false);
+                      }
+                    },
+                    error => {
+                        console.error("Firestore Error:", error);
+                        if (error.code === 'permission-denied') {
+                            alert("Izin Ditolak! \n\nJika ini proyek Anda sendiri, pastikan 'Firestore Security Rules' diatur ke 'Test Mode' (allow read, write: if true;).");
+                        }
+                    }
+                );
+             }, [firebaseUser, date]); // Add date to dependency so it re-checks when date changes
+
+             const handleSave = async (habitData) => {
+                 setIsSaving(true);
+                 let points = 0;
+                 Object.keys(habitData).forEach(k => { if(habitData[k].status) points++; });
+                 const percentage = Math.round((points/7)*100);
+
+                 const dataToSave = {
+                     role: 'student',
+                     ...habitData, 
+                     date, 
+                     studentId: user.id, 
+                     studentName: user.name, 
+                     classId: user.classId, 
+                     completionPercentage: percentage
+                 };
+
+                 try {
+                     // 1. Simpan ke Firebase (Untuk Tampilan App)
+                     await db.collection('artifacts').doc(appId).collection('public').doc('data').collection(`logs_${user.id}`).doc(date).set(dataToSave, { merge: true });
+                     
+                     // 2. Simpan ke Google Sheet (Untuk Rekap Excel)
+                     if (GOOGLE_SHEET_SCRIPT_URL) {
+                         await fetch(GOOGLE_SHEET_SCRIPT_URL, {
+                             method: 'POST',
+                             mode: 'no-cors', // Penting agar tidak error di browser
+                             headers: {
+                                 'Content-Type': 'application/json',
+                             },
+                             body: JSON.stringify(dataToSave)
+                         });
+                         console.log("Data dikirim ke Google Sheet");
+                     } else {
+                         console.warn("URL Google Sheet belum diisi di kode.");
+                     }
+
+                     alert("Jurnal berhasil disimpan ke Database & Google Sheet!");
+                 } catch (error) {
+                     console.error("Save Error:", error);
+                     alert("Gagal menyimpan data: " + error.message);
+                 } finally {
+                     setIsSaving(false);
+                 }
+             };
+
+             return (
+                 <div className="space-y-6">
+                    <div className="bg-blue-600 rounded-2xl p-6 text-white shadow-lg">
+                        <h2 className="text-2xl font-bold">Halo, {user.name}!</h2>
+                        <p className="text-blue-100 text-sm">Ayo isi jurnal hari ini.</p>
+                    </div>
+                    <div className="flex items-center justify-between bg-white p-3 rounded-xl shadow-sm border">
+                        <Icons.Calendar className="text-slate-500"/>
+                        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="outline-none"/>
+                    </div>
+                    
+                    {/* Tampilkan pesan jika sudah terisi */}
+                    {isAlreadyFilled && (
+                        <div className="bg-green-100 border border-green-200 text-green-800 p-4 rounded-xl text-center">
+                            <p className="font-bold">✅ Jurnal hari ini sudah terisi.</p>
+                            <p className="text-xs mt-1">Data sudah tersimpan dan tidak dapat diubah lagi hari ini.</p>
+                        </div>
+                    )}
+
+                    <HabitList 
+                        initialData={logData[date] || {}} 
+                        onSave={handleSave} 
+                        isReadOnly={isAlreadyFilled} // Jadikan read-only jika sudah terisi
+                    />
+                    
+                    {isSaving && <p className="text-center text-xs text-blue-600 animate-pulse">Sedang menyimpan...</p>}
+                 </div>
+             )
+        }
+
+        // Teacher Dashboard Component (Updated)
+        function TeacherDashboard({ user, firebaseUser }) {
+             const [date, setDate] = React.useState(new Date().toISOString().split('T')[0]);
+             const [classLogs, setClassLogs] = React.useState([]);
+             const [selectedStudentForValidation, setSelectedStudentForValidation] = React.useState(null);
+             const [isLoading, setIsLoading] = React.useState(false);
+             const myStudents = React.useMemo(() => ALL_STUDENTS.filter(s => s.classId === user.classId), [user.classId]);
+             
+             // Define fetchLogs function
+             const fetchLogs = React.useCallback(async () => {
+                if (!firebaseUser) return;
+                setIsLoading(true);
+                const logs = [];
+                for (const student of myStudents) {
+                    const docRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection(`logs_${student.id}`).doc(date);
+                    try {
+                        const doc = await docRef.get();
+                        if (doc.exists) {
+                            logs.push({ ...doc.data(), studentName: student.name, studentId: student.id });
+                        } else {
+                            logs.push({ studentName: student.name, studentId: student.id, notFilled: true });
+                        }
+                    } catch (e) { console.error(e); }
+                }
+                setClassLogs(logs);
+                setIsLoading(false);
+             }, [firebaseUser, myStudents, date]);
+
+             // Initial fetch
+             React.useEffect(() => {
+                fetchLogs();
+             }, [fetchLogs]);
+
+             const handleSaveValidation = async (rating) => {
+                 if (!selectedStudentForValidation) return;
+                 
+                 const studentId = selectedStudentForValidation.studentId;
+                 const stickerInfo = VALIDATION_OPTIONS.find(v => v.value === rating);
+                 
+                 const dataToUpdate = {
+                     teacherValidation: {
+                         rating: rating,
+                         sticker: stickerInfo.icon,
+                         timestamp: new Date().toISOString(),
+                         teacherName: user.name
+                     }
+                 };
+
+                 await db.collection('artifacts').doc(appId).collection('public').doc('data').collection(`logs_${studentId}`).doc(date).set(dataToUpdate, { merge: true });
+                 
+                 // Simpan ke Google Sheet (Update Row)
+                 if (GOOGLE_SHEET_SCRIPT_URL) {
+                     const sheetPayload = {
+                         role: 'teacher',
+                         date: date,
+                         studentName: selectedStudentForValidation.studentName,
+                         classId: user.classId,
+                         teacherValidation: dataToUpdate.teacherValidation
+                     };
+                     
+                     fetch(GOOGLE_SHEET_SCRIPT_URL, {
+                         method: 'POST',
+                         mode: 'no-cors',
+                         headers: { 'Content-Type': 'application/json' },
+                         body: JSON.stringify(sheetPayload)
+                     }).catch(e => console.error("Sheet Error:", e));
+                 }
+
+                 // Update local state to reflect change immediately
+                 setClassLogs(prev => prev.map(log => 
+                    log.studentId === studentId 
+                    ? { ...log, teacherValidation: { rating: rating, sticker: stickerInfo.icon } }
+                    : log
+                 ));
+                 
+                 setSelectedStudentForValidation(null);
+                 alert(`Validasi ${stickerInfo.label} diberikan!`);
+             };
+
+             return (
+                <div className="space-y-6">
+                  <div className="bg-slate-800 rounded-2xl p-6 text-white shadow-lg">
+                    <h2 className="text-xl font-bold">Wali Kelas {user.classId}</h2>
+                    <p className="text-slate-300 text-sm">Pemantauan & Validasi Jurnal</p>
+                  </div>
+
+                  {/* Date Picker */}
+                  <div className="flex items-center justify-between bg-white p-3 rounded-xl shadow-sm border">
+                        <div className="flex items-center gap-2">
+                            <Icons.Calendar className="text-slate-500"/>
+                            <span className="text-sm font-semibold text-slate-600">Tanggal:</span>
+                        </div>
+                        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="outline-none font-medium text-slate-700"/>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Card className="p-4">
+                        <h3 className="text-sm font-semibold text-slate-500 uppercase mb-2">Total Siswa</h3>
+                        <p className="text-3xl font-bold text-slate-800">{myStudents.length}</p>
+                    </Card>
+                    <Card className="p-4">
+                        <h3 className="text-sm font-semibold text-slate-500 uppercase mb-2">Mengisi Hari Ini</h3>
+                        <p className="text-3xl font-bold text-green-600">
+                            {classLogs.filter(l => !l.notFilled).length}
+                            <span className="text-sm text-slate-400 font-normal ml-2">/ {myStudents.length}</span>
+                        </p>
+                    </Card>
+                  </div>
+
+                  <Card className="overflow-hidden">
+                    <div className="bg-slate-100 px-4 py-3 border-b flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                            <h3 className="font-bold text-slate-700">Daftar Siswa</h3>
+                            <button 
+                                onClick={fetchLogs} 
+                                disabled={isLoading}
+                                className="p-1 hover:bg-slate-200 rounded-full transition-colors text-blue-600"
+                                title="Segarkan Data"
+                            >
+                                <span className={isLoading ? "animate-spin block" : "block"}>
+                                    <Icons.Refresh />
+                                </span>
+                            </button>
+                        </div>
+                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">{new Date(date).toLocaleDateString('id-ID')}</span>
+                    </div>
+                    <div className="divide-y max-h-96 overflow-y-auto relative">
+                        {isLoading && (
+                            <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center">
+                                <span className="text-sm font-semibold text-slate-500 bg-white px-3 py-1 rounded-full shadow-sm">Memuat...</span>
+                            </div>
+                        )}
+                        {classLogs.map((log, idx) => (
+                            <div 
+                                key={idx} 
+                                onClick={() => !log.notFilled && setSelectedStudentForValidation(log)}
+                                className={`p-4 flex items-center justify-between transition-colors ${!log.notFilled ? 'cursor-pointer hover:bg-blue-50' : 'opacity-60'}`}
+                            >
+                                <div>
+                                    <p className="font-medium text-slate-800">{log.studentName}</p>
+                                    <div className="flex gap-2 mt-1 items-center">
+                                        {!log.notFilled ? (
+                                            <>
+                                                {log.teacherValidation ? (
+                                                    <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full flex items-center gap-1 border border-green-200">
+                                                        {log.teacherValidation.sticker} Terverifikasi
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full border border-yellow-200">
+                                                        Perlu Validasi
+                                                    </span>
+                                                )}
+                                            </>
+                                        ) : (
+                                            <span className="text-xs text-red-400 italic">Belum mengisi jurnal</span>
+                                        )}
+                                    </div>
+                                </div>
+                                <div>
+                                     {!log.notFilled && (
+                                        <div className="text-right">
+                                            <span className="block font-bold text-lg text-blue-600">{log.completionPercentage}%</span>
+                                            <Icons.ChevronDown className="ml-auto text-slate-400 w-4 h-4"/>
+                                        </div>
+                                     )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                  </Card>
+
+                  {/* Validation Modal */}
+                  {selectedStudentForValidation && (
+                      <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-[100] p-4 animate-fade-in-up">
+                          <div className="bg-white w-full max-w-lg rounded-2xl max-h-[90vh] flex flex-col shadow-2xl">
+                              <div className="p-4 border-b flex items-center justify-between bg-slate-50 rounded-t-2xl">
+                                  <div>
+                                      <h3 className="font-bold text-lg text-slate-800">{selectedStudentForValidation.studentName}</h3>
+                                      <p className="text-xs text-slate-500">Jurnal Tanggal {date}</p>
+                                  </div>
+                                  <button onClick={() => setSelectedStudentForValidation(null)} className="p-2 hover:bg-slate-200 rounded-full">
+                                      <Icons.Close />
+                                  </button>
+                              </div>
+                              
+                              <div className="p-4 overflow-y-auto flex-1">
+                                  <HabitList initialData={selectedStudentForValidation} isReadOnly={true} />
+                              </div>
+
+                              <div className="p-4 border-t bg-slate-50 rounded-b-2xl">
+                                  <p className="text-sm font-bold text-slate-700 mb-3 text-center">Berikan Validasi & Stiker:</p>
+                                  <div className="grid grid-cols-2 gap-3">
+                                      {VALIDATION_OPTIONS.map((opt) => (
+                                          <button
+                                              key={opt.value}
+                                              onClick={() => handleSaveValidation(opt.value)}
+                                              className={`p-3 rounded-xl border-2 flex flex-col items-center gap-1 transition-all active:scale-95 ${
+                                                  selectedStudentForValidation.teacherValidation?.rating === opt.value
+                                                  ? 'border-blue-500 bg-blue-50 shadow-md ring-2 ring-blue-200'
+                                                  : 'border-slate-100 bg-white hover:border-blue-200'
+                                              }`}
+                                          >
+                                              <span className="text-2xl">{opt.icon}</span>
+                                              <span className="text-xs font-bold text-slate-700">{opt.label}</span>
+                                          </button>
+                                      ))}
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  )}
+                </div>
+             );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
