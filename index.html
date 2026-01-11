@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jurnal KAIH - SMPN 7 Dedai</title>
     
     <!-- 1. Pustaka React & Babel -->
@@ -19,33 +19,16 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
     <style>
-        /* Mengunci background utama browser */
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background-color: #cbd5e1; /* Warna latar belakang desktop (abu-abu) */
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            min-height: 100vh;
-        }
-
-        /* Container utama yang mensimulasikan layar HP */
-        #root {
-            width: 100%;
-            max-width: 480px; /* Lebar maksimal menyerupai HP */
-            background-color: #f8fafc;
-            min-height: 100vh;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); /* Bayangan agar timbul */
-            position: relative;
-            overflow-x: hidden; /* Mencegah geser samping */
-        }
-
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; }
         .animate-fade-in-up { animation: fadeInUp 0.5s ease-out; }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        
         /* Custom Scrollbar for list */
         .student-list::-webkit-scrollbar { width: 6px; }
         .student-list::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+        
+        /* Modal Animation */
+        .modal-enter { animation: modalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
     </style>
 </head>
 <body>
@@ -98,11 +81,11 @@
 
     // --- DATA GURU & SISWA ---
         const TEACHERS = [
-            { id: 't_7', name: 'Emi', classId: '7', username: 'walikelas7', password: '123456' },
-            { id: 't_8a', name: 'Yohanes Agus', classId: '8A', username: 'walikelas8a', password: '123456' },
-            { id: 't_8b', name: 'Rusmini', classId: '8B', username: 'walikelas8b', password: '123456' },
-            { id: 't_9a', name: 'Emanila', classId: '9A', username: 'walikelas9a', password: '123456' },
-            { id: 't_9b', name: 'Arten', classId: '9B', username: 'walikelas9b', password: '123456' },
+            { id: 't_7', name: 'Emi', classId: '7', username: 'guruwali7', password: '12345' },
+            { id: 't_8a', name: 'Yohanes Agus', classId: '8A', username: 'guruwali8a', password: '12345' },
+            { id: 't_8b', name: 'Rusmini', classId: '8B', username: 'guruwali8b', password: '12345' },
+            { id: 't_9a', name: 'Emanila', classId: '9A', username: 'guruwali9a', password: '12345' },
+            { id: 't_9b', name: 'Arten', classId: '9B', username: 'guruwali9b', password: '12345' },
         ];
 
         const ALL_STUDENTS = [
@@ -361,11 +344,76 @@
             );
         };
 
+        // Welcome Modal Component
+        const WelcomeModal = ({ onClose }) => (
+            <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 animate-fade-in-up backdrop-blur-sm modal-enter">
+                <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[90vh]">
+                    {/* Photo Section */}
+                    <div className="md:w-1/3 bg-blue-50 flex flex-col items-center justify-center p-6 border-r border-blue-100">
+                        <div className="w-32 h-40 bg-slate-200 rounded-xl overflow-hidden shadow-md mb-4 relative group">
+                           {/* Foto Kepala Sekolah */}
+                           <img 
+                             src="https://drive.google.com/thumbnail?id=1wA8nra8uGUvRVUOIWTtsV2Htmd3ckbBP&sz=w500" 
+                             alt="Kepala Sekolah" 
+                             className="w-full h-full object-cover"
+                             onError={(e) => {e.target.onerror = null; e.target.src="https://via.placeholder.com/150x200?text=Foto+Kepsek"}}
+                           />
+                        </div>
+                        <div className="text-center">
+                            <h4 className="font-bold text-slate-800 text-sm">Rufina Sekunda</h4>
+                            <p className="text-xs text-slate-500">Kepala SMPN 7 Dedai</p>
+                        </div>
+                    </div>
+
+                    {/* Text Section */}
+                    <div className="md:w-2/3 p-6 flex flex-col relative overflow-hidden">
+                        <button onClick={onClose} className="absolute top-4 right-4 p-2 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors z-10">
+                            <Icons.Close />
+                        </button>
+                        
+                        <div className="overflow-y-auto max-h-full pr-2">
+                            <h2 className="text-xl font-bold text-blue-700 mb-4 sticky top-0 bg-white">Sambutan Kepala Sekolah</h2>
+                            <div className="space-y-3 text-sm text-slate-600 leading-relaxed text-justify">
+                                <p>
+                                    Assalamu’alaikum Wr. Wb.,<br/>
+                                    Salam Sejahtera,<br/>
+                                    Adil Ka’ Talino, Bacuramin Ka’ Saruga,<br/>
+                                    Basengat Ka’ Jubata.
+                                </p>
+                                <p>
+                                    Bapak/Ibu Guru, Orang Tua, dan Siswa sekalian. Puji syukur pada Tuhan Yang Maha Esa. Demi meningkatkan kualitas layanan pendidikan di era digital, mulai Semester Genap 2025/2026 ini, SMPN 7 Dedai resmi meluncurkan <b>Aplikasi Jurnal KAIH</b>. Aplikasi ini hadir untuk mempermudah komunikasi serta pemantauan aktivitas dan nilai siswa secara transparan. Selain itu, aplikasi ini sebagai komitmen satuan pendidikan dalam kerangka pembelajaran mendalam, dengan adanya kemitraan dan digitalisasi dalam menjalankan program satuan pendidikan. Mari kita manfaatkan teknologi ini bersama-sama untuk mendukung prestasi anak-anak kita.
+                                </p>
+                                <p>
+                                    Terima kasih atas dukungannya.<br/>
+                                    Wassalamu’alaikum Wr. Wb.
+                                </p>
+                                <br/>
+                                <p className="text-right italic">
+                                    Dedai, Januari 2026<br/>
+                                    Kepala SMPN 7 Dedai,<br/>
+                                    <b>Rufina Sekunda</b>
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div className="mt-4 pt-4 border-t flex justify-end shrink-0">
+                            <button 
+                                onClick={onClose}
+                                className="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition-all shadow-md active:scale-95"
+                            >
+                                Masuk ke Aplikasi
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+
         // Setup Instruction Screen
         function SetupInstruction() {
             return (
                 <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-                    <Card className="w-full p-8 text-center animate-fade-in-up">
+                    <Card className="max-w-xl w-full p-8 text-center animate-fade-in-up">
                         <div className="w-20 h-20 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
                             <Icons.Sun />
                         </div>
@@ -585,16 +633,31 @@
             };
 
             return (
-                <div className="h-full min-h-screen bg-gradient-to-br from-blue-500 to-indigo-600 flex flex-col items-center justify-center p-4">
-                    <Card className="w-full p-6 animate-fade-in-up shadow-xl">
+                <div className="min-h-screen bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center p-4">
+                    <Card className="w-full max-w-md p-6 animate-fade-in-up">
                         <div className="text-center mb-8">
-                            <img 
-                                src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Logo_of_Ministry_of_Education_and_Culture_of_Republic_of_Indonesia.svg/480px-Logo_of_Ministry_of_Education_and_Culture_of_Republic_of_Indonesia.svg.png" 
-                                alt="Logo" 
-                                className="w-20 h-20 mx-auto mb-4 object-contain"
-                            />
+                             <div className="flex justify-center items-center gap-4 mb-4">
+                                {/* Tut Wuri */}
+                                <img 
+                                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Logo_of_Ministry_of_Education_and_Culture_of_Republic_of_Indonesia.svg/480px-Logo_of_Ministry_of_Education_and_Culture_of_Republic_of_Indonesia.svg.png" 
+                                    alt="Logo Kemendikbud" 
+                                    className="w-16 h-16 object-contain"
+                                />
+                                {/* Kab Sintang */}
+                                <img 
+                                    src="https://drive.google.com/thumbnail?id=1RI2JD5mmv2gUBVvfVhaeFgOT7O4hf8qA&sz=w200" 
+                                    alt="Logo Sintang" 
+                                    className="w-16 h-16 object-contain"
+                                />
+                                {/* Sekolah */}
+                                <img 
+                                    src="https://drive.google.com/thumbnail?id=19zE5D5Zhx7IiRRuGHMfB7bzVnvQiPdoF&sz=w200" 
+                                    alt="Logo Sekolah" 
+                                    className="w-16 h-16 object-contain"
+                                />
+                            </div>
                             <h1 className="text-2xl font-bold text-slate-800">Selamat Datang</h1>
-                            <p className="text-slate-500 text-center px-4">Aplikasi Jurnal KAIH SMPN 7 Dedai, Sintang, Provinsi Kalimantan Barat</p>
+                            <p className="text-slate-500 text-center px-4">Aplikasi Jurnal KAIH SMPN 7 Dedai, Kabupaten Sintang, Provinsi Kalimantan Barat</p>
                         </div>
 
                         <div className="flex bg-slate-100 p-1 rounded-lg mb-6">
@@ -652,7 +715,7 @@
                                 <>
                                     <div>
                                         <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Pilih Kelas</label>
-                                        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                                        <div className="flex gap-2 overflow-x-auto pb-2">
                                             {['7', '8A', '8B', '9A', '9B'].map(c => (
                                                 <button
                                                     key={c}
@@ -707,6 +770,7 @@
             const [user, setUser] = React.useState(null);
             const [appUser, setAppUser] = React.useState(null);
             const [loading, setLoading] = React.useState(true);
+            const [showWelcome, setShowWelcome] = React.useState(true);
 
             React.useEffect(() => {
                 const initAuth = async () => {
@@ -732,13 +796,18 @@
                 return () => unsubscribe();
             }, []);
 
-            if (loading) return <div className="h-screen flex items-center justify-center">Memuat...</div>;
-            if (!appUser) return <LoginScreen onLogin={setAppUser} />;
+            if (loading) return <div className="min-h-screen flex items-center justify-center">Memuat...</div>;
+            if (!appUser) return (
+                <>
+                    {showWelcome && <WelcomeModal onClose={() => setShowWelcome(false)} />}
+                    <LoginScreen onLogin={setAppUser} />
+                </>
+            );
 
             return (
-                <div className="min-h-screen font-sans text-slate-800 pb-20 bg-slate-50">
+                <div className="min-h-screen bg-slate-50 font-sans text-slate-800 pb-20">
                     <header className="bg-white border-b sticky top-0 z-50">
-                        <div className="w-full px-4 h-16 flex items-center justify-between">
+                        <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Logo_of_Ministry_of_Education_and_Culture_of_Republic_of_Indonesia.svg/480px-Logo_of_Ministry_of_Education_and_Culture_of_Republic_of_Indonesia.svg.png" className="w-8 h-8 object-contain" />
                                 <div>
@@ -748,7 +817,7 @@
                             <button onClick={() => setAppUser(null)} className="p-2 text-slate-500"><Icons.LogOut/></button>
                         </div>
                     </header>
-                    <main className="w-full p-4">
+                    <main className="max-w-4xl mx-auto p-4">
                         {appUser.role === 'student' && <StudentDashboard user={appUser} firebaseUser={user} />}
                         {appUser.role === 'teacher' && <TeacherDashboard user={appUser} firebaseUser={user} />}
                         {/* Dashboard lain bisa ditambahkan di sini dengan logika yang sama */}
@@ -778,6 +847,13 @@
 
              const handleSaveValidation = async (rating) => {
                  if (!user.childId) return;
+                 
+                 // Prevent re-validation
+                 if (childLog?.parentValidation) {
+                     alert("Anda sudah memberikan validasi untuk tanggal ini.");
+                     return;
+                 }
+
                  const stickerInfo = VALIDATION_OPTIONS.find(v => v.value === rating);
                  
                  const dataToUpdate = {
@@ -849,7 +925,11 @@
                           <Card className="p-4 border-t-4 border-purple-500 bg-white">
                               <div className="text-center mb-4">
                                   <h3 className="font-bold text-slate-800">Validasi & Stiker</h3>
-                                  <p className="text-xs text-slate-500">Berikan apresiasi untuk anak hari ini.</p>
+                                  <p className="text-xs text-slate-500">
+                                      {childLog.parentValidation 
+                                        ? "Terima kasih, Anda sudah memberikan validasi." 
+                                        : "Berikan apresiasi untuk anak hari ini."}
+                                  </p>
                               </div>
                               
                               {childLog.parentValidation && (
@@ -860,20 +940,30 @@
                               )}
 
                               <div className="grid grid-cols-2 gap-3">
-                                  {VALIDATION_OPTIONS.map((opt) => (
-                                      <button
-                                          key={opt.value}
-                                          onClick={() => handleSaveValidation(opt.value)}
-                                          className={`p-3 rounded-xl border-2 flex flex-col items-center gap-1 transition-all active:scale-95 ${
-                                              childLog.parentValidation?.rating === opt.value
-                                              ? 'border-purple-500 bg-purple-50 shadow-md ring-2 ring-purple-200'
-                                              : 'border-slate-100 bg-white hover:border-purple-200'
-                                          }`}
-                                      >
-                                          <span className="text-2xl">{opt.icon}</span>
-                                          <span className="text-xs font-bold text-slate-700">{opt.label}</span>
-                                      </button>
-                                  ))}
+                                  {VALIDATION_OPTIONS.map((opt) => {
+                                      const isSelected = childLog.parentValidation?.rating === opt.value;
+                                      const isDisabled = !!childLog.parentValidation; // Boolean cast
+                                      
+                                      return (
+                                          <button
+                                              key={opt.value}
+                                              disabled={isDisabled}
+                                              onClick={() => handleSaveValidation(opt.value)}
+                                              className={`p-3 rounded-xl border-2 flex flex-col items-center gap-1 transition-all ${
+                                                  !isDisabled ? 'active:scale-95 hover:border-purple-200' : 'cursor-default'
+                                              } ${
+                                                  isSelected
+                                                  ? 'border-purple-500 bg-purple-50 shadow-md ring-2 ring-purple-200'
+                                                  : 'border-slate-100 bg-white'
+                                              } ${
+                                                  isDisabled && !isSelected ? 'opacity-40' : ''
+                                              }`}
+                                          >
+                                              <span className="text-2xl">{opt.icon}</span>
+                                              <span className="text-xs font-bold text-slate-700">{opt.label}</span>
+                                          </button>
+                                      );
+                                  })}
                               </div>
                           </Card>
                       </>
@@ -1073,8 +1163,8 @@
              return (
                 <div className="space-y-6">
                   <div className="bg-slate-800 rounded-2xl p-6 text-white shadow-lg">
-                    <h2 className="text-xl font-bold">Wali Kelas {user.classId}</h2>
-                    <p className="text-slate-300 text-sm">Pemantauan & Validasi Jurnal</p>
+                    <h2 className="text-xl font-bold">{user.name}</h2>
+                    <p className="text-slate-300 text-sm">Wali Kelas {user.classId} - Pemantauan & Validasi Jurnal</p>
                   </div>
 
                   {/* Date Picker */}
