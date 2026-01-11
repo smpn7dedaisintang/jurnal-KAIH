@@ -19,16 +19,21 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; }
         .animate-fade-in-up { animation: fadeInUp 0.5s ease-out; }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        /* Custom Scrollbar for list */
-        .student-list::-webkit-scrollbar { width: 6px; }
-        .student-list::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+        
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background-color: #f1f5f9; }
         
         /* Modal Animation */
-        .modal-enter { animation: modalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-        @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .modal-enter { animation: modalIn 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+
+        /* Text Shadow */
+        .text-shadow-sm { text-shadow: 0 1px 2px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body>
@@ -81,10 +86,10 @@
 
     // --- DATA GURU & SISWA ---
         const TEACHERS = [
-            { id: 't_7', name: 'Emi', classId: '7', username: 'guruwali7', password: '12345' },
+            { id: 't_7', name: 'Emanila', classId: '7', username: 'guruwali7', password: '12345' },
             { id: 't_8a', name: 'Yohanes Agus', classId: '8A', username: 'guruwali8a', password: '12345' },
             { id: 't_8b', name: 'Rusmini', classId: '8B', username: 'guruwali8b', password: '12345' },
-            { id: 't_9a', name: 'Emanila', classId: '9A', username: 'guruwali9a', password: '12345' },
+            { id: 't_9a', name: 'L. Sentot Dwi Prasetyo', classId: '9A', username: 'guruwali9a', password: '12345' },
             { id: 't_9b', name: 'Arten', classId: '9B', username: 'guruwali9b', password: '12345' },
         ];
 
@@ -344,64 +349,83 @@
             );
         };
 
-        // Welcome Modal Component
+        // Welcome Modal Component (Colorful Graphic Design)
         const WelcomeModal = ({ onClose }) => (
             <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 animate-fade-in-up backdrop-blur-sm modal-enter">
-                <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[90vh]">
-                    {/* Photo Section */}
-                    <div className="md:w-1/3 bg-blue-50 flex flex-col items-center justify-center p-6 border-r border-blue-100">
-                        <div className="w-32 h-40 bg-slate-200 rounded-xl overflow-hidden shadow-md mb-4 relative group">
+                <div className="bg-white w-full max-w-3xl rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[90vh] border-4 border-white/20">
+                    {/* Photo Section - Colorful Gradient */}
+                    <div className="md:w-5/12 bg-gradient-to-br from-blue-600 via-blue-500 to-indigo-600 flex flex-col items-center justify-center p-8 text-white relative overflow-hidden">
+                        {/* Decorative Circles */}
+                        <div className="absolute top-0 left-0 w-32 h-32 bg-white/10 rounded-full -translate-x-1/2 -translate-y-1/2 blur-2xl"></div>
+                        <div className="absolute bottom-0 right-0 w-40 h-40 bg-indigo-500/30 rounded-full translate-x-1/3 translate-y-1/3 blur-2xl"></div>
+
+                        <div className="w-36 h-48 bg-white/20 backdrop-blur-md rounded-2xl p-2 shadow-lg mb-4 relative z-10 rotate-1 hover:rotate-0 transition-transform duration-300">
                            {/* Foto Kepala Sekolah */}
                            <img 
                              src="https://drive.google.com/thumbnail?id=1wA8nra8uGUvRVUOIWTtsV2Htmd3ckbBP&sz=w500" 
                              alt="Kepala Sekolah" 
-                             className="w-full h-full object-cover"
+                             className="w-full h-full object-cover rounded-xl shadow-inner bg-white"
                              onError={(e) => {e.target.onerror = null; e.target.src="https://via.placeholder.com/150x200?text=Foto+Kepsek"}}
                            />
                         </div>
-                        <div className="text-center">
-                            <h4 className="font-bold text-slate-800 text-sm">Rufina Sekunda</h4>
-                            <p className="text-xs text-slate-500">Kepala SMPN 7 Dedai</p>
+                        <div className="text-center relative z-10">
+                            <h4 className="font-bold text-xl mb-1 text-white text-shadow-sm">Rufina Sekunda</h4>
+                            <p className="text-blue-100 text-sm font-medium bg-blue-700/30 px-3 py-1 rounded-full inline-block border border-blue-400/30">Kepala SMPN 7 Dedai</p>
                         </div>
                     </div>
 
                     {/* Text Section */}
-                    <div className="md:w-2/3 p-6 flex flex-col relative overflow-hidden">
-                        <button onClick={onClose} className="absolute top-4 right-4 p-2 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors z-10">
+                    <div className="md:w-7/12 p-8 flex flex-col relative bg-slate-50">
+                        {/* Background Decoration */}
+                         <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+                            <Icons.Trophy />
+                         </div>
+
+                        <button onClick={onClose} className="absolute top-4 right-4 p-2 bg-white hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-full shadow-sm transition-all z-20 group">
                             <Icons.Close />
                         </button>
                         
-                        <div className="overflow-y-auto max-h-full pr-2">
-                            <h2 className="text-xl font-bold text-blue-700 mb-4 sticky top-0 bg-white">Sambutan Kepala Sekolah</h2>
-                            <div className="space-y-3 text-sm text-slate-600 leading-relaxed text-justify">
+                        <div className="overflow-y-auto custom-scrollbar pr-2 flex-1 relative z-10">
+                            <div className="mb-6 border-b-2 border-blue-100 pb-2">
+                                <h2 className="text-2xl font-extrabold text-slate-800 tracking-tight">Sambutan <span className="text-blue-600">Kepala Sekolah</span></h2>
+                                <div className="h-1 w-20 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full mt-2"></div>
+                            </div>
+                            
+                            <div className="space-y-4 text-sm text-slate-600 leading-relaxed text-justify font-medium">
                                 <p>
-                                    Assalamu’alaikum Wr. Wb.,<br/>
-                                    Salam Sejahtera,<br/>
-                                    Adil Ka’ Talino, Bacuramin Ka’ Saruga,<br/>
-                                    Basengat Ka’ Jubata.
+                                    <span className="text-blue-600 font-bold block mb-1">Assalamu’alaikum Wr. Wb.,</span>
+                                    Salam Sejahtera, Adil Ka’ Talino, Bacuramin Ka’ Saruga, Basengat Ka’ Jubata.
                                 </p>
                                 <p>
-                                    Bapak/Ibu Guru, Orang Tua, dan Siswa sekalian. Puji syukur pada Tuhan Yang Maha Esa. Demi meningkatkan kualitas layanan pendidikan di era digital, mulai Semester Genap 2025/2026 ini, SMPN 7 Dedai resmi meluncurkan <b>Aplikasi Jurnal KAIH</b>. Aplikasi ini hadir untuk mempermudah komunikasi serta pemantauan aktivitas dan nilai siswa secara transparan. Selain itu, aplikasi ini sebagai komitmen satuan pendidikan dalam kerangka pembelajaran mendalam, dengan adanya kemitraan dan digitalisasi dalam menjalankan program satuan pendidikan. Mari kita manfaatkan teknologi ini bersama-sama untuk mendukung prestasi anak-anak kita.
+                                    Bapak/Ibu Guru, Orang Tua, dan Siswa sekalian. Puji syukur pada Tuhan Yang Maha Esa. 
                                 </p>
+                                <div className="bg-white p-4 rounded-xl border border-blue-100 shadow-sm border-l-4 border-l-blue-500 italic text-slate-700">
+                                     "Demi meningkatkan kualitas layanan pendidikan di era digital, mulai Semester Genap 2025/2026 ini, SMPN 7 Dedai resmi meluncurkan <b>Aplikasi Jurnal KAIH</b>."
+                                </div>
                                 <p>
+                                    Aplikasi ini hadir untuk mempermudah komunikasi serta pemantauan aktivitas dan nilai siswa secara transparan. Selain itu, aplikasi ini sebagai komitmen satuan pendidikan dalam kerangka pembelajaran mendalam, dengan adanya kemitraan dan digitalisasi dalam menjalankan program satuan pendidikan. Mari kita manfaatkan teknologi ini bersama-sama untuk mendukung prestasi anak-anak kita.
+                                </p>
+                                <p className="font-semibold text-slate-700">
                                     Terima kasih atas dukungannya.<br/>
                                     Wassalamu’alaikum Wr. Wb.
                                 </p>
                                 <br/>
-                                <p className="text-right italic">
-                                    Dedai, Januari 2026<br/>
-                                    Kepala SMPN 7 Dedai,<br/>
-                                    <b>Rufina Sekunda</b>
-                                </p>
+                                <div className="flex items-center gap-3 justify-end mt-2 opacity-80">
+                                     <div className="text-right">
+                                        <p className="text-xs text-slate-400 uppercase tracking-wider">Dedai, Januari 2026</p>
+                                        <p className="font-bold text-slate-700">Kepala SMPN 7 Dedai</p>
+                                     </div>
+                                </div>
                             </div>
                         </div>
                         
-                        <div className="mt-4 pt-4 border-t flex justify-end shrink-0">
+                        <div className="mt-6 pt-0 flex justify-end shrink-0 relative z-10">
                             <button 
                                 onClick={onClose}
-                                className="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition-all shadow-md active:scale-95"
+                                className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-blue-200 hover:shadow-blue-300 hover:-translate-y-0.5 transition-all active:scale-95 flex items-center gap-2 group"
                             >
-                                Masuk ke Aplikasi
+                                <span>Masuk ke Aplikasi</span>
+                                <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                             </button>
                         </div>
                     </div>
@@ -890,42 +914,57 @@
 
              return (
                 <div className="space-y-6">
-                  <div className="bg-purple-600 rounded-2xl p-6 text-white shadow-lg">
-                    <h2 className="text-xl font-bold">Portal Orang Tua</h2>
-                    <p className="text-purple-100 text-sm">Memantau: {user.name.replace('Ortu ', '')}</p>
+                   {/* Enhanced Header - Purple Gradient */}
+                  <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -translate-y-1/3 translate-x-1/3 blur-3xl"></div>
+                      <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-900/20 rounded-full translate-y-1/3 -translate-x-1/3 blur-2xl"></div>
+                      
+                      <div className="relative z-10">
+                        <h2 className="text-2xl font-bold text-shadow-sm mb-1">Portal Orang Tua</h2>
+                        <p className="text-purple-100 text-sm font-medium opacity-90">Memantau: <span className="font-bold text-white">{user.name.replace('Ortu ', '')}</span></p>
+                      </div>
                   </div>
 
                   {/* Date Picker */}
-                  <div className="flex items-center justify-between bg-white p-3 rounded-xl shadow-sm border">
-                        <div className="flex items-center gap-2">
-                            <Icons.Calendar className="text-slate-500"/>
-                            <span className="text-sm font-semibold text-slate-600">Tanggal:</span>
+                  <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-xl border border-slate-200 w-full">
+                            <Icons.Calendar className="text-purple-500"/>
+                            <span className="text-sm font-semibold text-slate-600 whitespace-nowrap">Tanggal:</span>
+                            <input 
+                                type="date" 
+                                value={date} 
+                                onChange={(e) => setDate(e.target.value)} 
+                                className="bg-transparent outline-none font-bold text-slate-700 text-sm w-full"
+                            />
                         </div>
-                        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="outline-none font-medium text-slate-700"/>
                   </div>
 
                   {!childLog ? (
-                      <div className="text-center py-12 bg-white rounded-xl border border-dashed border-slate-300">
-                          <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-400">
+                      <div className="text-center py-16 bg-white rounded-3xl border border-dashed border-slate-300">
+                          <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
                               <Icons.BookOpen />
                           </div>
-                          <p className="text-slate-500 font-medium">Belum ada jurnal</p>
-                          <p className="text-xs text-slate-400">Anak belum mengisi jurnal pada tanggal ini.</p>
+                          <p className="text-slate-500 font-bold text-lg">Belum ada jurnal</p>
+                          <p className="text-sm text-slate-400">Anak belum mengisi jurnal pada tanggal ini.</p>
                       </div>
                   ) : (
                       <>
-                          <Card className="p-4 bg-white">
-                              <div className="flex items-center justify-between mb-4 border-b pb-2">
-                                <h3 className="font-bold text-lg text-slate-800">Isian Jurnal</h3>
-                                <span className="font-bold text-blue-600">{childLog.completionPercentage}%</span>
+                          <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-2 md:p-6">
+                              <div className="flex items-center justify-between mb-6 px-2 border-b border-slate-100 pb-4">
+                                <h3 className="font-bold text-lg text-slate-800">Isian Jurnal Anak</h3>
+                                <div className="bg-blue-50 text-blue-700 px-3 py-1 rounded-lg text-sm font-bold border border-blue-100">
+                                    Skor: {childLog.completionPercentage}%
+                                </div>
                               </div>
                               <HabitList initialData={childLog} isReadOnly={true} />
-                          </Card>
+                          </div>
 
-                          <Card className="p-4 border-t-4 border-purple-500 bg-white">
-                              <div className="text-center mb-4">
-                                  <h3 className="font-bold text-slate-800">Validasi & Stiker</h3>
-                                  <p className="text-xs text-slate-500">
+                          <div className="bg-white rounded-3xl shadow-lg border border-purple-100 p-6 relative overflow-hidden">
+                              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-400 to-pink-400"></div>
+                              
+                              <div className="text-center mb-6">
+                                  <h3 className="font-bold text-lg text-slate-800 mb-1">Validasi & Stiker</h3>
+                                  <p className="text-sm text-slate-500">
                                       {childLog.parentValidation 
                                         ? "Terima kasih, Anda sudah memberikan validasi." 
                                         : "Berikan apresiasi untuk anak hari ini."}
@@ -933,39 +972,39 @@
                               </div>
                               
                               {childLog.parentValidation && (
-                                  <div className="mb-4 bg-green-50 p-2 rounded-lg border border-green-200 text-center">
-                                      <p className="text-xs text-green-800">Anda memberikan stiker:</p>
-                                      <span className="text-3xl">{childLog.parentValidation.sticker}</span>
+                                  <div className="mb-6 bg-green-50 p-4 rounded-2xl border border-green-200 text-center animate-fade-in-up">
+                                      <p className="text-xs font-bold text-green-800 uppercase tracking-wider mb-2">Stiker yang diberikan</p>
+                                      <span className="text-5xl drop-shadow-md">{childLog.parentValidation.sticker}</span>
                                   </div>
                               )}
 
                               <div className="grid grid-cols-2 gap-3">
                                   {VALIDATION_OPTIONS.map((opt) => {
                                       const isSelected = childLog.parentValidation?.rating === opt.value;
-                                      const isDisabled = !!childLog.parentValidation; // Boolean cast
+                                      const isDisabled = !!childLog.parentValidation; 
                                       
                                       return (
                                           <button
                                               key={opt.value}
                                               disabled={isDisabled}
                                               onClick={() => handleSaveValidation(opt.value)}
-                                              className={`p-3 rounded-xl border-2 flex flex-col items-center gap-1 transition-all ${
-                                                  !isDisabled ? 'active:scale-95 hover:border-purple-200' : 'cursor-default'
+                                              className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all ${
+                                                  !isDisabled ? 'active:scale-95 hover:border-purple-300 hover:shadow-md' : 'cursor-default'
                                               } ${
                                                   isSelected
-                                                  ? 'border-purple-500 bg-purple-50 shadow-md ring-2 ring-purple-200'
-                                                  : 'border-slate-100 bg-white'
+                                                  ? 'border-purple-500 bg-purple-50 shadow-lg ring-2 ring-purple-200 scale-105'
+                                                  : 'border-slate-100 bg-slate-50'
                                               } ${
-                                                  isDisabled && !isSelected ? 'opacity-40' : ''
+                                                  isDisabled && !isSelected ? 'opacity-40 grayscale' : ''
                                               }`}
                                           >
-                                              <span className="text-2xl">{opt.icon}</span>
-                                              <span className="text-xs font-bold text-slate-700">{opt.label}</span>
+                                              <span className="text-3xl filter drop-shadow-sm">{opt.icon}</span>
+                                              <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">{opt.label}</span>
                                           </button>
                                       );
                                   })}
                               </div>
-                          </Card>
+                          </div>
                       </>
                   )}
                 </div>
@@ -1053,30 +1092,44 @@
 
              return (
                  <div className="space-y-6">
-                    <div className="bg-blue-600 rounded-2xl p-6 text-white shadow-lg">
-                        <h2 className="text-2xl font-bold">Halo, {user.name}!</h2>
-                        <p className="text-blue-100 text-sm">Ayo isi jurnal hari ini.</p>
-                    </div>
-                    <div className="flex items-center justify-between bg-white p-3 rounded-xl shadow-sm border">
-                        <Icons.Calendar className="text-slate-500"/>
-                        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="outline-none"/>
-                    </div>
-                    
-                    {/* Tampilkan pesan jika sudah terisi */}
-                    {isAlreadyFilled && (
-                        <div className="bg-green-100 border border-green-200 text-green-800 p-4 rounded-xl text-center">
-                            <p className="font-bold">✅ Jurnal hari ini sudah terisi.</p>
-                            <p className="text-xs mt-1">Data sudah tersimpan dan tidak dapat diubah lagi hari ini.</p>
+                    {/* Enhanced Header - Blue/Indigo Gradient */}
+                    <div className="bg-gradient-to-br from-blue-600 via-blue-500 to-indigo-600 rounded-3xl p-8 text-white shadow-2xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
+                        <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-500/30 rounded-full translate-y-1/3 -translate-x-1/3 blur-2xl"></div>
+                        
+                        <div className="relative z-10">
+                            <h2 className="text-3xl font-extrabold mb-2 text-shadow-sm">Halo, {user.name.split(' ')[0]}! 👋</h2>
+                            <p className="text-blue-50 text-sm md:text-base font-medium opacity-90 max-w-lg">
+                                Siap menjadi Anak Indonesia Hebat hari ini? Yuk, isi jurnalmu dengan jujur!
+                            </p>
                         </div>
-                    )}
+                    </div>
 
-                    <HabitList 
-                        initialData={logData[date] || {}} 
-                        onSave={handleSave} 
-                        isReadOnly={isAlreadyFilled} // Jadikan read-only jika sudah terisi
-                    />
+                    <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div className="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-xl border border-slate-200 w-full md:w-auto">
+                            <Icons.Calendar className="text-blue-500"/>
+                            <span className="text-sm font-semibold text-slate-600">Tanggal:</span>
+                            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="bg-transparent outline-none font-bold text-slate-700 text-sm"/>
+                        </div>
+                        
+                        {/* Tampilkan pesan jika sudah terisi */}
+                        {isAlreadyFilled && (
+                            <div className="flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-xl border border-green-200 text-sm font-bold w-full md:w-auto justify-center">
+                                <Icons.CheckCircle />
+                                <span>Sudah Terisi</span>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-2 md:p-6">
+                         <HabitList 
+                            initialData={logData[date] || {}} 
+                            onSave={handleSave} 
+                            isReadOnly={isAlreadyFilled} // Jadikan read-only jika sudah terisi
+                        />
+                    </div>
                     
-                    {isSaving && <p className="text-center text-xs text-blue-600 animate-pulse">Sedang menyimpan...</p>}
+                    {isSaving && <p className="text-center text-xs text-blue-600 animate-pulse font-semibold">Sedang menyimpan data ke server...</p>}
                  </div>
              )
         }
@@ -1162,42 +1215,60 @@
 
              return (
                 <div className="space-y-6">
-                  <div className="bg-slate-800 rounded-2xl p-6 text-white shadow-lg">
-                    <h2 className="text-xl font-bold">{user.name}</h2>
-                    <p className="text-slate-300 text-sm">Wali Kelas {user.classId} - Pemantauan & Validasi Jurnal</p>
+                   {/* Enhanced Header - Slate/Dark Gradient */}
+                  <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
+                    <div className="relative z-10">
+                        <h2 className="text-2xl font-bold mb-1">{user.name}</h2>
+                        <div className="flex items-center gap-2 text-slate-300 text-sm">
+                            <span className="bg-slate-700 px-2 py-0.5 rounded text-white text-xs font-bold">Wali Kelas {user.classId}</span>
+                            <span>•</span>
+                            <span>Pemantauan & Validasi Jurnal</span>
+                        </div>
+                    </div>
                   </div>
 
                   {/* Date Picker */}
-                  <div className="flex items-center justify-between bg-white p-3 rounded-xl shadow-sm border">
-                        <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                        <div className="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-xl border border-slate-200 w-full md:w-auto">
                             <Icons.Calendar className="text-slate-500"/>
-                            <span className="text-sm font-semibold text-slate-600">Tanggal:</span>
+                            <span className="text-sm font-semibold text-slate-600 whitespace-nowrap">Tanggal:</span>
+                            <input 
+                                type="date" 
+                                value={date} 
+                                onChange={(e) => setDate(e.target.value)} 
+                                className="bg-transparent outline-none font-bold text-slate-700 text-sm w-full"
+                            />
                         </div>
-                        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="outline-none font-medium text-slate-700"/>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Card className="p-4">
-                        <h3 className="text-sm font-semibold text-slate-500 uppercase mb-2">Total Siswa</h3>
-                        <p className="text-3xl font-bold text-slate-800">{myStudents.length}</p>
+                    <Card className="p-6 bg-gradient-to-br from-white to-slate-50 border-none shadow-md">
+                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Total Siswa</h3>
+                        <div className="flex items-end gap-2">
+                            <p className="text-4xl font-extrabold text-slate-800">{myStudents.length}</p>
+                            <span className="text-sm text-slate-500 mb-1 font-medium">Orang</span>
+                        </div>
                     </Card>
-                    <Card className="p-4">
-                        <h3 className="text-sm font-semibold text-slate-500 uppercase mb-2">Mengisi Hari Ini</h3>
-                        <p className="text-3xl font-bold text-green-600">
-                            {classLogs.filter(l => !l.notFilled).length}
-                            <span className="text-sm text-slate-400 font-normal ml-2">/ {myStudents.length}</span>
-                        </p>
+                    <Card className="p-6 bg-gradient-to-br from-white to-green-50 border-none shadow-md">
+                        <h3 className="text-xs font-bold text-green-600 uppercase tracking-wider mb-2">Mengisi Hari Ini</h3>
+                        <div className="flex items-end gap-2">
+                            <p className="text-4xl font-extrabold text-green-600">
+                                {classLogs.filter(l => !l.notFilled).length}
+                            </p>
+                            <span className="text-sm text-slate-500 mb-1 font-medium">/ {myStudents.length} Siswa</span>
+                        </div>
                     </Card>
                   </div>
 
-                  <Card className="overflow-hidden">
-                    <div className="bg-slate-100 px-4 py-3 border-b flex justify-between items-center">
-                        <div className="flex items-center gap-2">
-                            <h3 className="font-bold text-slate-700">Daftar Siswa</h3>
+                  <Card className="overflow-hidden border-0 shadow-lg rounded-3xl bg-white">
+                    <div className="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                        <div className="flex items-center gap-3">
+                            <h3 className="font-bold text-slate-800">Daftar Siswa</h3>
                             <button 
                                 onClick={fetchLogs} 
                                 disabled={isLoading}
-                                className="p-1 hover:bg-slate-200 rounded-full transition-colors text-blue-600"
+                                className="p-2 hover:bg-white hover:shadow-sm rounded-full transition-all text-blue-600 bg-blue-50"
                                 title="Segarkan Data"
                             >
                                 <span className={isLoading ? "animate-spin block" : "block"}>
@@ -1205,45 +1276,53 @@
                                 </span>
                             </button>
                         </div>
-                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">{new Date(date).toLocaleDateString('id-ID')}</span>
+                        <span className="text-xs font-bold bg-blue-100 text-blue-700 px-3 py-1 rounded-full">{new Date(date).toLocaleDateString('id-ID')}</span>
                     </div>
-                    <div className="divide-y max-h-96 overflow-y-auto relative">
+                    <div className="divide-y divide-slate-50 max-h-96 overflow-y-auto relative custom-scrollbar">
                         {isLoading && (
-                            <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center">
-                                <span className="text-sm font-semibold text-slate-500 bg-white px-3 py-1 rounded-full shadow-sm">Memuat...</span>
+                            <div className="absolute inset-0 bg-white/80 z-10 flex items-center justify-center backdrop-blur-sm">
+                                <div className="flex flex-col items-center">
+                                    <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-2"></div>
+                                    <span className="text-sm font-semibold text-slate-500">Memuat Data...</span>
+                                </div>
                             </div>
                         )}
                         {classLogs.map((log, idx) => (
                             <div 
                                 key={idx} 
                                 onClick={() => !log.notFilled && setSelectedStudentForValidation(log)}
-                                className={`p-4 flex items-center justify-between transition-colors ${!log.notFilled ? 'cursor-pointer hover:bg-blue-50' : 'opacity-60'}`}
+                                className={`p-4 flex items-center justify-between transition-all duration-200 group ${!log.notFilled ? 'cursor-pointer hover:bg-blue-50/50' : 'opacity-60 bg-slate-50/50'}`}
                             >
-                                <div>
-                                    <p className="font-medium text-slate-800">{log.studentName}</p>
-                                    <div className="flex gap-2 mt-1 items-center">
-                                        {!log.notFilled ? (
-                                            <>
-                                                {log.teacherValidation ? (
-                                                    <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full flex items-center gap-1 border border-green-200">
-                                                        {log.teacherValidation.sticker} Terverifikasi
-                                                    </span>
-                                                ) : (
-                                                    <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full border border-yellow-200">
-                                                        Perlu Validasi
-                                                    </span>
-                                                )}
-                                            </>
-                                        ) : (
-                                            <span className="text-xs text-red-400 italic">Belum mengisi jurnal</span>
-                                        )}
+                                <div className="flex items-center gap-3">
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow-sm ${!log.notFilled ? 'bg-white text-slate-700 border border-slate-100' : 'bg-slate-200 text-slate-400'}`}>
+                                        {idx + 1}
+                                    </div>
+                                    <div>
+                                        <p className="font-bold text-slate-700 text-sm group-hover:text-blue-700 transition-colors">{log.studentName}</p>
+                                        <div className="flex gap-2 mt-1 items-center">
+                                            {!log.notFilled ? (
+                                                <>
+                                                    {log.teacherValidation ? (
+                                                        <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full flex items-center gap-1 border border-green-200 font-bold">
+                                                            {log.teacherValidation.sticker} Terverifikasi
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full border border-yellow-200 font-bold animate-pulse">
+                                                            Perlu Validasi
+                                                        </span>
+                                                    )}
+                                                </>
+                                            ) : (
+                                                <span className="text-[10px] text-red-400 italic font-medium">Belum mengisi</span>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                                 <div>
                                      {!log.notFilled && (
                                         <div className="text-right">
                                             <span className="block font-bold text-lg text-blue-600">{log.completionPercentage}%</span>
-                                            <Icons.ChevronDown className="ml-auto text-slate-400 w-4 h-4"/>
+                                            <Icons.ChevronDown className="ml-auto text-slate-300 w-4 h-4 group-hover:text-blue-400 transition-colors"/>
                                         </div>
                                      )}
                                 </div>
@@ -1252,38 +1331,38 @@
                     </div>
                   </Card>
 
-                  {/* Validation Modal */}
+                  {/* Validation Modal - Improved */}
                   {selectedStudentForValidation && (
-                      <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-[100] p-4 animate-fade-in-up">
-                          <div className="bg-white w-full max-w-lg rounded-2xl max-h-[90vh] flex flex-col shadow-2xl">
-                              <div className="p-4 border-b flex items-center justify-between bg-slate-50 rounded-t-2xl">
+                      <div className="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center z-[100] p-4 animate-fade-in-up backdrop-blur-sm">
+                          <div className="bg-white w-full max-w-lg rounded-3xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+                              <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
                                   <div>
-                                      <h3 className="font-bold text-lg text-slate-800">{selectedStudentForValidation.studentName}</h3>
-                                      <p className="text-xs text-slate-500">Jurnal Tanggal {date}</p>
+                                      <h3 className="font-extrabold text-lg text-slate-800">{selectedStudentForValidation.studentName}</h3>
+                                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Jurnal Tanggal {date}</p>
                                   </div>
-                                  <button onClick={() => setSelectedStudentForValidation(null)} className="p-2 hover:bg-slate-200 rounded-full">
+                                  <button onClick={() => setSelectedStudentForValidation(null)} className="p-2 hover:bg-white hover:shadow rounded-full transition-all text-slate-400 hover:text-red-500">
                                       <Icons.Close />
                                   </button>
                               </div>
                               
-                              <div className="p-4 overflow-y-auto flex-1">
+                              <div className="p-5 overflow-y-auto flex-1 custom-scrollbar bg-white">
                                   <HabitList initialData={selectedStudentForValidation} isReadOnly={true} />
                               </div>
 
-                              <div className="p-4 border-t bg-slate-50 rounded-b-2xl">
-                                  <p className="text-sm font-bold text-slate-700 mb-3 text-center">Berikan Validasi & Stiker:</p>
+                              <div className="p-6 border-t border-slate-100 bg-slate-50">
+                                  <p className="text-sm font-bold text-slate-600 mb-4 text-center uppercase tracking-wide">Berikan Validasi & Stiker</p>
                                   <div className="grid grid-cols-2 gap-3">
                                       {VALIDATION_OPTIONS.map((opt) => (
                                           <button
                                               key={opt.value}
                                               onClick={() => handleSaveValidation(opt.value)}
-                                              className={`p-3 rounded-xl border-2 flex flex-col items-center gap-1 transition-all active:scale-95 ${
+                                              className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all active:scale-95 hover:shadow-md ${
                                                   selectedStudentForValidation.teacherValidation?.rating === opt.value
-                                                  ? 'border-blue-500 bg-blue-50 shadow-md ring-2 ring-blue-200'
-                                                  : 'border-slate-100 bg-white hover:border-blue-200'
+                                                  ? 'border-blue-500 bg-blue-50 shadow-inner ring-2 ring-blue-200'
+                                                  : 'border-white bg-white hover:border-blue-100'
                                               }`}
                                           >
-                                              <span className="text-2xl">{opt.icon}</span>
+                                              <span className="text-3xl filter drop-shadow-sm">{opt.icon}</span>
                                               <span className="text-xs font-bold text-slate-700">{opt.label}</span>
                                           </button>
                                       ))}
