@@ -8,7 +8,9 @@
     <!-- 1. Pustaka React & Babel -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- PERBAIKAN: Mematok Babel ke versi stabil 7.24.4 -->
+    <script src="https://unpkg.com/@babel/standalone@7.24.4/babel.min.js"></script>
     
     <!-- 2. Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -17,6 +19,17 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <!-- PERBAIKAN: Menambahkan konfigurasi Classic JSX Runtime -->
+    <script>
+        if (window.Babel) {
+            Babel.registerPreset('react-classic', {
+                presets: [
+                    [Babel.availablePresets['react'], { runtime: 'classic' }]
+                ]
+            });
+        }
+    </script>
 
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; }
@@ -39,7 +52,8 @@
 <body>
     <div id="root"></div>
 
-    <script type="text/babel">
+    <!-- PERBAIKAN: Menggunakan preset react-classic -->
+    <script type="text/babel" data-presets="env,react-classic">
     // --- LOGIKA KONFIGURASI FIREBASE ---
         let firebaseConfig = null;
         let isConfigValid = false;
